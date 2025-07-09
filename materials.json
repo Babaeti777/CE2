@@ -1,0 +1,142 @@
+{
+  "materialPrices": {
+    "foundation": { "slab": 4.75, "crawl": 7.25, "basement": 12.50 },
+    "framing": { "wood": 15.50, "steel": 21.00, "concrete": 26.00 },
+    "exterior": { "vinyl": 3.25, "brick": 8.50, "stucco": 6.75, "stone": 16.00 },
+    "roofing": { "asphalt": 3.75, "metal": 7.50, "tile": 11.00 },
+    "flooring": { "carpet": 2.75, "hardwood": 8.50, "tile": 5.50, "laminate": 3.75 }
+  },
+  "csiDivisions": [
+    {
+      "division": "01",
+      "title": "General Requirements",
+      "items": [
+        { "code": "01 31 00", "name": "Project Management", "unit": "hour", "rate": 125 },
+        { "code": "01 50 00", "name": "Temporary Facilities", "unit": "lump sum", "rate": 5000 },
+        { "code": "01 56 00", "name": "Temporary Barriers & Fencing", "unit": "ln ft", "rate": 9 },
+        { "code": "01 73 00", "name": "Execution (Final Cleaning)", "unit": "sq ft", "rate": 0.40 }
+      ]
+    },
+    {
+      "division": "02",
+      "title": "Existing Conditions",
+      "items": [
+        { "code": "02 41 19", "name": "Selective Demolition", "unit": "hour", "rate": 85 },
+        { "code": "02 82 00", "name": "Asbestos Abatement", "unit": "sq ft", "rate": 25 }
+      ]
+    },
+    {
+      "division": "03",
+      "title": "Concrete",
+      "items": [
+        { "code": "03 11 00", "name": "Concrete Forming", "unit": "sq ft", "rate": 3.50 },
+        { "code": "03 20 00", "name": "Concrete Reinforcing", "unit": "ton", "rate": 1200 },
+        { "code": "03 30 00", "name": "Cast-in-Place Concrete", "unit": "cu yd", "rate": 165 },
+        { "code": "03 35 00", "name": "Concrete Finishing", "unit": "sq ft", "rate": 1.75 }
+      ]
+    },
+    {
+      "division": "04",
+      "title": "Masonry",
+      "items": [
+        { "code": "04 21 13", "name": "Brick Masonry", "unit": "sq ft", "rate": 28 },
+        { "code": "04 22 00", "name": "Concrete Unit Masonry (CMU)", "unit": "sq ft", "rate": 19 },
+        { "code": "04 42 00", "name": "Exterior Stone Cladding", "unit": "sq ft", "rate": 45 }
+      ]
+    },
+    {
+      "division": "05",
+      "title": "Metals",
+      "items": [
+        { "code": "05 12 00", "name": "Structural Steel Framing", "unit": "ton", "rate": 3200 },
+        { "code": "05 31 00", "name": "Steel Decking", "unit": "sq ft", "rate": 4.50 },
+        { "code": "05 51 00", "name": "Metal Stairs", "unit": "flight", "rate": 4500 },
+        { "code": "05 52 13", "name": "Pipe and Tube Railings", "unit": "ln ft", "rate": 135 }
+      ]
+    },
+    {
+      "division": "06",
+      "title": "Wood, Plastics, and Composites",
+      "items": [
+        { "code": "06 11 00", "name": "Wood Framing", "unit": "sq ft", "rate": 11.50 },
+        { "code": "06 16 00", "name": "Sheathing", "unit": "sq ft", "rate": 2.25 },
+        { "code": "06 20 00", "name": "Finish Carpentry", "unit": "hour", "rate": 80 },
+        { "code": "06 41 00", "name": "Architectural Wood Casework", "unit": "ln ft", "rate": 350 }
+      ]
+    },
+    {
+      "division": "07",
+      "title": "Thermal and Moisture Protection",
+      "items": [
+        { "code": "07 21 00", "name": "Thermal Insulation", "unit": "sq ft", "rate": 1.75 },
+        { "code": "07 53 00", "name": "Elastomeric Membrane Roofing (TPO)", "unit": "sq ft", "rate": 9.50 },
+        { "code": "07 62 00", "name": "Sheet Metal Flashing and Trim", "unit": "ln ft", "rate": 18 },
+        { "code": "07 92 00", "name": "Joint Sealants", "unit": "ln ft", "rate": 3.00 }
+      ]
+    },
+    {
+      "division": "08",
+      "title": "Openings",
+      "items": [
+        { "code": "08 11 13", "name": "Hollow Metal Doors and Frames", "unit": "each", "rate": 1100 },
+        { "code": "08 14 16", "name": "Flush Wood Doors", "unit": "each", "rate": 800 },
+        { "code": "08 41 13", "name": "Aluminum-Framed Entrances and Storefronts", "unit": "sq ft", "rate": 70 },
+        { "code": "08 51 13", "name": "Aluminum Windows", "unit": "each", "rate": 500 }
+      ]
+    },
+    {
+      "division": "09",
+      "title": "Finishes",
+      "items": [
+        { "code": "09 29 00", "name": "Gypsum Board (Drywall)", "unit": "sq ft", "rate": 2.75 },
+        { "code": "09 51 00", "name": "Acoustical Ceilings", "unit": "sq ft", "rate": 3.75 },
+        { "code": "09 65 00", "name": "Resilient Flooring (VCT)", "unit": "sq ft", "rate": 2.25 },
+        { "code": "09 68 00", "name": "Carpeting", "unit": "sq yd", "rate": 35 },
+        { "code": "09 91 00", "name": "Painting", "unit": "sq ft", "rate": 2.15 }
+      ]
+    },
+    {
+      "division": "22",
+      "title": "Plumbing",
+      "items": [
+        { "code": "22 11 00", "name": "Facility Water Distribution", "unit": "fixture", "rate": 700 },
+        { "code": "22 13 00", "name": "Facility Sanitary Sewerage", "unit": "fixture", "rate": 600 },
+        { "code": "22 40 00", "name": "Plumbing Fixtures", "unit": "each", "rate": 550 }
+      ]
+    },
+    {
+      "division": "23",
+      "title": "HVAC",
+      "items": [
+        { "code": "23 31 00", "name": "HVAC Ducts and Casings", "unit": "ln ft", "rate": 40 },
+        { "code": "23 73 00", "name": "Indoor Central-Station Air-Handling Units", "unit": "ton", "rate": 3800 },
+        { "code": "23 81 26", "name": "Split-System Air-Conditioners", "unit": "ton", "rate": 3000 }
+      ]
+    },
+    {
+      "division": "26",
+      "title": "Electrical",
+      "items": [
+        { "code": "26 05 19", "name": "Low-Voltage Electrical Power Conductors", "unit": "sq ft", "rate": 4.00 },
+        { "code": "26 27 26", "name": "Wiring Devices", "unit": "each", "rate": 75 },
+        { "code": "26 24 16", "name": "Panelboards", "unit": "each", "rate": 1600 },
+        { "code": "26 51 00", "name": "Interior Lighting", "unit": "fixture", "rate": 200 }
+      ]
+    },
+    {
+      "division": "31",
+      "title": "Earthwork",
+      "items": [
+        { "code": "31 20 00", "name": "Earth Moving", "unit": "cu yd", "rate": 30 }
+      ]
+    },
+    {
+      "division": "32",
+      "title": "Exterior Improvements",
+      "items": [
+        { "code": "32 12 16", "name": "Asphalt Paving", "unit": "sq yd", "rate": 60 },
+        { "code": "32 90 00", "name": "Planting", "unit": "lump sum", "rate": 4000 }
+      ]
+    }
+  ]
+}
