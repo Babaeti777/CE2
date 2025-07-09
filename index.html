@@ -580,21 +580,22 @@
             },
             currentEstimate: {
                 lineItems: []
-            }
+            },
+            currentProjectId: null // New property to store the ID of the project being edited
         };
 
         // Simulated materials.json content
         const materialsJsonContent = `
             [
-                { "id": 101, "name": "Standard Drywall (1/2\\")", "category": "Finishes", "price": 15.50, "unit": "sheet" },
-                { "id": 102, "name": "Moisture-Resistant Drywall (5/8\\")", "category": "Finishes", "price": 22.00, "unit": "sheet" },
+                { "id": 101, "name": "Standard Drywall (1/2\\\\")", "category": "Finishes", "price": 15.50, "unit": "sheet" },
+                { "id": 102, "name": "Moisture-Resistant Drywall (5/8\\\\")", "category": "Finishes", "price": 22.00, "unit": "sheet" },
                 { "id": 201, "name": "2x4 Lumber (8ft SPF)", "category": "Framing", "price": 3.75, "unit": "piece" },
                 { "id": 202, "name": "2x6 Lumber (12ft SPF)", "category": "Framing", "price": 7.20, "unit": "piece" },
                 { "id": 301, "name": "TPO Roofing Membrane", "category": "Exterior", "price": 9.50, "unit": "sq ft" },
                 { "id": 302, "name": "Asphalt Shingles (3-tab)", "category": "Exterior", "price": 75.00, "unit": "bundle" },
                 { "id": 401, "name": "Concrete (3000 PSI)", "category": "Concrete", "price": 120.00, "unit": "cubic yard" },
                 { "id": 501, "name": "Electrical Wire (14/2 Romex)", "category": "Electrical", "price": 0.50, "unit": "linear ft" },
-                { "id": 601, "name": "PEX Tubing (1/2\\")", "category": "Plumbing", "price": 0.70, "unit": "linear ft" }
+                { "id": 601, "name": "PEX Tubing (1/2\\\\")", "category": "Plumbing", "price": 0.70, "unit": "linear ft" }
             ]
         `;
 
@@ -668,6 +669,7 @@
                                 <div style="text-align: right;">
                                     <div style="font-weight: 600;">${formatCurrency(p.total)}</div>
                                     <div style="font-size: 0.875rem; color: ${p.status === 'Active' ? 'var(--secondary)' : 'var(--gray-500)'};">${p.status}</div>
+                                    <button class="btn btn-secondary btn-sm edit-project-btn" data-id="${p.id}" style="margin-left: 0.5rem; padding: 0.25rem 0.75rem;">Edit</button>
                                 </div>
                             </div>
                         `).join('')}
@@ -790,7 +792,14 @@
         }
         
         function addEventListenersForTab(tabId) {
-            if (tabId === 'estimates') {
+            if (tabId === 'dashboard') { // Add event listeners for new edit buttons
+                document.querySelectorAll('.edit-project-btn').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const projectId = parseInt(e.target.dataset.id);
+                        editProject(projectId);
+                    });
+                });
+            } else if (tabId === 'estimates') {
                 document.getElementById('addLineItemBtn').addEventListener('click', addLineItem);
                 document.getElementById('estimateForm').addEventListener('submit', saveProject);
                 document.getElementById('line-items-container').addEventListener('input', updateEstimateTotal);
@@ -885,16 +894,60 @@
                 return;
             }
             
-            const newProject = {
-                id: Date.now(),
-                name,
-                client,
-                total,
-                status: 'Active'
-            };
-            state.projects.unshift(newProject);
-            await showModal('Success', 'Project Saved!');
+            if (state.currentProjectId) {
+                // Editing an existing project
+                const projectIndex = state.projects.findIndex(p => p.id === state.currentProjectId);
+                if (projectIndex !== -1) {
+                    state.projects[projectIndex].name = name;
+                    state.projects[projectIndex].client = client;
+                    state.projects[projectIndex].total = total;
+                    // Status remains the same or can be updated if a status field is added
+                    await showModal('Success', 'Project updated successfully!');
+                } else {
+                    await showModal('Error', 'Could not find project to update.');
+                }
+                state.currentProjectId = null; // Clear current project ID after saving
+            } else {
+                // Creating a new project
+                const newProject = {
+                    id: Date.now(),
+                    name,
+                    client,
+                    total,
+                    status: 'Active'
+                };
+                state.projects.unshift(newProject);
+                await showModal('Success', 'New Project Saved!');
+            }
+            
             switchTab('dashboard');
+        }
+
+        async function editProject(projectId) {
+            const projectToEdit = state.projects.find(p => p.id === projectId);
+            if (!projectToEdit) {
+                await showModal('Error', 'Project not found.');
+                return;
+            }
+
+            state.currentProjectId = projectId; // Set the current project ID
+
+            // Switch to estimates tab and wait for it to render
+            await switchTab('estimates'); 
+
+            // Populate project details
+            document.getElementById('projectName').value = projectToEdit.name;
+            document.getElementById('clientName').value = projectToEdit.client;
+
+            // Clear existing line items for a fresh estimate for this project
+            const lineItemsContainer = document.getElementById('line-items-container');
+            // Keep the header row
+            while (lineItemsContainer.children.length > 1) { 
+                lineItemsContainer.removeChild(lineItemsContainer.lastChild);
+            }
+            state.currentEstimate.lineItems = []; // Clear internal line item state
+
+            updateEstimateTotal(); // Recalculate total for empty line items
         }
 
         async function addMaterial() {
@@ -1108,15 +1161,21 @@
         const pageTitle = document.getElementById('pageTitle');
 
         function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.toggle('active', tab.id === `${tabId}Tab`));
-            navItems.forEach(item => item.classList.toggle('active', item.dataset.tab === tabId));
-            const newTitle = document.querySelector(`.nav-item[data-tab="${tabId}"]`).textContent.trim();
-            pageTitle.textContent = newTitle;
-            render(tabId);
+            return new Promise(async (resolve) => {
+                document.querySelectorAll('.tab-content').forEach(tab => tab.classList.toggle('active', tab.id === `${tabId}Tab`));
+                navItems.forEach(item => item.classList.toggle('active', item.dataset.tab === tabId));
+                const newTitle = document.querySelector(`.nav-item[data-tab="${tabId}"]`).textContent.trim();
+                pageTitle.textContent = newTitle;
+                await render(tabId); // Ensure render completes
+                resolve();
+            });
         }
 
         navItems.forEach(item => item.addEventListener('click', () => switchTab(item.dataset.tab)));
-        document.getElementById('newProjectBtn').addEventListener('click', () => switchTab('estimates'));
+        document.getElementById('newProjectBtn').addEventListener('click', () => {
+            state.currentProjectId = null; // Ensure new project mode
+            switchTab('estimates');
+        });
 
         // --- PLAN TAKEOFF ---
         const planViewer = document.getElementById('planViewer');
