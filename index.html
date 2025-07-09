@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Construction Estimator Pro - Modern Edition</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- jsPDF for PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- jsPDF AutoTable plugin for PDF table generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.14/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --primary: #4f46e5;
+            --primary-light: #e0e7ff;
+            --secondary: #10b981;
+            --dark: #111827;
+            --gray-900: #1f2937;
+            --gray-700: #374151;
+            --gray-500: #6b7280;
+            --gray-300: #d1d5db;
+            --gray-100: #f3f4f6;
+            --white: #ffffff;
+            --danger: #ef4444;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --border-radius: 0.75rem;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--gray-100);
+            color: var(--gray-900);
+            line-height: 1.5;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: var(--white);
+            border-right: 1px solid var(--gray-300);
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100%;
+            z-index: 10;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0 1rem 2rem 1rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.5rem;
+            font-weight: 700;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 0.5rem;
+            color: var(--gray-700);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .nav-item:hover {
+            background: var(--gray-100);
+            color: var(--dark);
+        }
+
+        .nav-item.active {
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            width: calc(100% - 250px);
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.65rem 1.25rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background-color: #4338ca;
+        }
+        
+        .btn-secondary {
+            background: var(--gray-200);
+            color: var(--gray-700);
+        }
+        .btn-secondary:hover {
+            background: var(--gray-300);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--gray-300);
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+        }
+        
+        .stat-card {
+            background: var(--white);
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--gray-300);
+        }
+        .stat-card .label {
+            font-size: 0.875rem;
+            color: var(--gray-500);
+            margin-bottom: 0.5rem;
+        }
+        .stat-card .value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        .form-input {
+            width: 100%;
+            padding: 0.65rem 0.75rem;
+            border: 1px solid var(--gray-300);
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        /* Line Items */
+        #line-items-container .line-item {
+            display: grid;
+            grid-template-columns: 3fr 1fr 1fr 1fr auto; /* Adjusted for material select */
+            gap: 1rem;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--gray-100);
+        }
+        #line-items-container .line-item-header {
+            font-weight: 600;
+            color: var(--gray-500);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            padding: 0 0.75rem;
+        }
+        #line-items-container .line-item select {
+            padding: 0.65rem 0.75rem;
+            border: 1px solid var(--gray-300);
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            width: 100%;
+        }
+
+        /* Plan Takeoff Specific Styles */
+        #planTakeoffTab .takeoff-container {
+            display: flex;
+            gap: 1.5rem;
+            height: calc(100vh - 10rem);
+        }
+
+        #planViewer {
+            flex: 3;
+            background: var(--white);
+            border: 1px solid var(--gray-300);
+            border-radius: var(--border-radius);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+        }
+        #planViewer:active {
+            cursor: grabbing;
+        }
+
+        #planCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
+        #planInstructions {
+            color: var(--gray-500);
+            text-align: center;
+            padding: 2rem;
+        }
+
+        #takeoffData {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        #measurements-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            margin-top: 1rem;
+        }
+
+        #toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .tool-btn {
+            padding: 0.5rem;
+            border: 1px solid var(--gray-300);
+            background: var(--white);
+            border-radius: 0.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+        }
+
+        .tool-btn.active {
+            background: var(--primary-light);
+            border-color: var(--primary);
+        }
+        .tool-btn:hover {
+            background: var(--gray-100);
+        }
+        .tool-btn svg {
+            width: 20px;
+            height: 20px;
+            stroke: var(--gray-700);
+        }
+        
+        #scale-setter {
+            margin-top: 1rem;
+        }
+        #scale-setter label {
+            font-weight: 500;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+        #scale-setter input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid var(--gray-300);
+            border-radius: 0.5rem;
+        }
+        
+        #measurements {
+            list-style: none;
+        }
+        #measurements li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0.5rem;
+            border-bottom: 1px solid var(--gray-100);
+            font-size: 0.9rem;
+        }
+        #measurements li:hover {
+            background-color: var(--gray-100);
+        }
+        .measurement-value {
+            font-weight: 600;
+            color: var(--primary);
+        }
+        .delete-btn {
+            background: none;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 1.2rem;
+            opacity: 0.5;
+            transition: opacity 0.2s;
+        }
+        .delete-btn:hover {
+            opacity: 1;
+        }
+
+        /* Custom Modal for Alerts/Confirmations */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            max-width: 600px; /* Increased max-width for proposal text */
+            width: 90%;
+            text-align: center;
+        }
+        .modal-content h3 {
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+            color: var(--dark);
+        }
+        .modal-content p {
+            margin-bottom: 1.5rem;
+            color: var(--gray-700);
+            text-align: left; /* Align text left for readability */
+            white-space: pre-wrap; /* Preserve whitespace and line breaks */
+        }
+        .modal-actions {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: var(--primary);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 1rem auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <nav class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">CE</div>
+                <span>Construction Pro</span>
+            </div>
+            <button class="nav-item active" data-tab="dashboard">
+                <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                Dashboard
+            </button>
+            <button class="nav-item" data-tab="estimates">
+                <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                Estimates
+            </button>
+            <button class="nav-item" data-tab="planTakeoff">
+                <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L15.232 5.232z"></path></svg>
+                Plan Takeoff
+            </button>
+            <button class="nav-item" data-tab="materials">
+                <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10a2 2 0 002 2h12a2 2 0 002-2V7M4 7l8-4 8 4M4 7l8 4m0 0l8-4m-8 4v10"></path></svg>
+                Materials
+            </button>
+            <button class="nav-item" data-tab="settings">
+                <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                Settings
+            </button>
+        </nav>
+
+        <main class="main-content">
+            <header class="header">
+                <h1 id="pageTitle" class="page-title">Dashboard</h1>
+                <button class="btn btn-primary" id="newProjectBtn">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                    New Project
+                </button>
+            </header>
+
+            <div id="dashboardTab" class="tab-content active">
+                <!-- Dashboard Content -->
+            </div>
+
+            <div id="estimatesTab" class="tab-content">
+                <!-- Estimates Content -->
+            </div>
+            
+            <div id="planTakeoffTab" class="tab-content">
+                <div class="takeoff-container">
+                    <div id="planViewer">
+                        <p id="planInstructions">Upload a blueprint to begin</p>
+                        <canvas id="planCanvas"></canvas>
+                    </div>
+                    <div id="takeoffData" class="card">
+                        <div class="card-header"><h2 class="card-title">Takeoff Details</h2></div>
+                        <div id="toolbar">
+                            <input type="file" id="uploadBtn" accept="image/*,application/pdf" style="display: none;">
+                            <button class="tool-btn" onclick="document.getElementById('uploadBtn').click();" title="Upload Plan">
+                                <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg>
+                            </button>
+                            <button class="tool-btn" data-tool="line" title="Line Tool">
+                                <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 19.5l15-15" /></svg>
+                            </button>
+                            <button class="tool-btn" data-tool="area" title="Area Tool">
+                                <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M9 9.563C9 9.254 9.254 9 9.563 9h4.874c.309 0 .563.254.563.563v4.874c0 .309-.254.563-.563.563H9.563A.563.563 0 019 14.437V9.563z" /></svg>
+                            </button>
+                            <button class="tool-btn" data-tool="count" title="Count Tool">
+                                <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            </button>
+                        </div>
+                        <div id="scale-setter">
+                            <label for="scaleInput">Scale: 1 inch = <input type="number" id="scaleInput" value="10"> feet</label>
+                        </div>
+                        <div id="measurements-container">
+                            <ul id="measurements"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="materialsTab" class="tab-content">
+                <!-- Materials Content -->
+            </div>
+            <div id="settingsTab" class="tab-content">
+                    <!-- Settings Content -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Custom Modal Structure -->
+    <div id="customModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 id="modalTitle"></h3>
+            <p id="modalMessage"></p>
+            <div id="modalSpinner" class="spinner" style="display: none;"></div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="modalCancelBtn" style="display: none;">Cancel</button>
+                <button class="btn btn-primary" id="modalConfirmBtn">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    (function() {
+        'use strict';
+        
+        // --- STATE MANAGEMENT ---
+        const state = {
+            projects: [
+                { id: 1, name: "Downtown Office Reno", client: "Innovate Inc.", total: 450000, status: "Active" },
+                { id: 2, name: "Suburban Retail Center", client: "ShopLocal LLC", total: 1200000, status: "Completed" },
+                { id: 3, name: "Oak Residence", client: "The Millers", total: 275000, status: "Active" },
+            ],
+            materials: [
+                { id: 1, name: "1/2\" Drywall", category: "Finishes", price: 15.50, unit: "sheet" },
+                { id: 2, name: "2x4 Lumber (8ft)", category: "Framing", price: 3.75, unit: "piece" },
+                { id: 3, name: "TPO Roofing", category: "Exterior", price: 9.50, unit: "sq ft" },
+            ],
+            settings: {
+                currency: "USD",
+                defaultTax: 6.0,
+                companyName: "Your Construction Co.",
+                companyAddress: "123 Building Blvd, City, State, ZIP",
+                companyPhone: "555-123-4567",
+                companyEmail: "info@yourco.com"
+            },
+            currentEstimate: {
+                lineItems: []
+            }
+        };
+
+        // --- CUSTOM MODAL FUNCTIONS (REPLACEMENT FOR alert/confirm) ---
+        const customModal = document.getElementById('customModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalMessage = document.getElementById('modalMessage');
+        const modalConfirmBtn = document.getElementById('modalConfirmBtn');
+        const modalCancelBtn = document.getElementById('modalCancelBtn');
+        const modalSpinner = document.getElementById('modalSpinner');
+
+        function showModal(title, message, isConfirm = false, showSpinner = false) {
+            return new Promise((resolve) => {
+                modalTitle.textContent = title;
+                modalMessage.textContent = message;
+                modalCancelBtn.style.display = isConfirm ? 'inline-flex' : 'none';
+                modalSpinner.style.display = showSpinner ? 'block' : 'none';
+                modalMessage.style.display = showSpinner ? 'none' : 'block'; // Hide message when spinner is shown
+                modalConfirmBtn.style.display = showSpinner ? 'none' : 'inline-flex'; // Hide confirm btn when spinner is shown
+
+                modalConfirmBtn.onclick = () => {
+                    customModal.classList.remove('active');
+                    resolve(true);
+                };
+                modalCancelBtn.onclick = () => {
+                    customModal.classList.remove('active');
+                    resolve(false);
+                };
+                customModal.classList.add('active');
+            });
+        }
+
+        // --- TEMPLATING ---
+        const templates = {
+            dashboard: () => `
+                <div class="grid-4">
+                    <div class="stat-card"><div class="label">Active Projects</div><div class="value">${state.projects.filter(p=>p.status === 'Active').length}</div></div>
+                    <div class="stat-card"><div class="label">Total Value (Active)</div><div class="value">${formatCurrency(state.projects.filter(p=>p.status === 'Active').reduce((sum, p) => sum + p.total, 0))}</div></div>
+                    <div class="stat-card"><div class="label">Completed</div><div class="value">${state.projects.filter(p=>p.status === 'Completed').length}</div></div>
+                    <div class="stat-card"><div class="label">Win Rate</div><div class="value">75%</div></div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><h2 class="card-title">Recent Projects</h2></div>
+                    <div id="projectList">
+                        ${state.projects.map(p => `
+                            <div style="display: flex; justify-content: space-between; padding: 0.75rem; border-bottom: 1px solid var(--gray-100);">
+                                <div>
+                                    <div style="font-weight: 600;">${p.name}</div>
+                                    <div style="font-size: 0.875rem; color: var(--gray-500);">${p.client}</div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="font-weight: 600;">${formatCurrency(p.total)}</div>
+                                    <div style="font-size: 0.875rem; color: ${p.status === 'Active' ? 'var(--secondary)' : 'var(--gray-500)'};">${p.status}</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `,
+            estimates: () => `
+                <form id="estimateForm" class="card">
+                    <div class="card-header"><h2 class="card-title">New Estimate</h2></div>
+                    <div class="form-group">
+                        <label class="form-label" for="projectName">Project Name</label>
+                        <input type="text" id="projectName" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="clientName">Client Name</label>
+                        <input type="text" id="clientName" class="form-input" required>
+                    </div>
+                    
+                    <h3 class="card-title" style="margin-top: 2rem; margin-bottom: 1rem; font-size: 1.1rem;">Line Items</h3>
+                    <div id="line-items-container">
+                        <div class="line-item line-item-header">
+                            <div>Description</div>
+                            <div>Qty</div>
+                            <div>Unit Cost</div>
+                            <div>Total</div>
+                            <div></div>
+                        </div>
+                    </div>
+                    <button type="button" id="addLineItemBtn" class="btn btn-secondary" style="margin-top: 1rem;">+ Add Line Item</button>
+
+                    <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--gray-100); text-align: right;">
+                        <div style="font-size: 1.25rem;"><strong>Total:</strong> <span id="estimateTotal">${formatCurrency(0)}</span></div>
+                        <button type="submit" class="btn btn-primary" style="margin-top: 1rem;">Save Project</button>
+                        <button type="button" id="exportPdfBtn" class="btn btn-secondary" style="margin-top: 1rem; margin-left: 0.5rem;">Export PDF</button>
+                        <button type="button" id="exportCsvBtn" class="btn btn-secondary" style="margin-top: 1rem; margin-left: 0.5rem;">Export CSV</button>
+                        <button type="button" id="generateProposalTextBtn" class="btn btn-primary" style="margin-top: 1rem; margin-left: 0.5rem;">✨ Generate Proposal Text</button>
+                    </div>
+                </form>
+            `,
+            materials: () => `
+                <div class="card">
+                    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                        <h2 class="card-title">Materials Database</h2>
+                        <button id="addMaterialBtn" class="btn btn-secondary">+ Add Material</button>
+                    </div>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="text-align: left; border-bottom: 1px solid var(--gray-300);">
+                                <th style="padding: 0.75rem;">Name</th>
+                                <th style="padding: 0.75rem;">Category</th>
+                                <th style="padding: 0.75rem;">Price</th>
+                                <th style="padding: 0.75rem;">Unit</th>
+                                <th style="padding: 0.75rem;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="materialsList">
+                            ${state.materials.map(m => `
+                                <tr style="border-bottom: 1px solid var(--gray-100);">
+                                    <td style="padding: 0.75rem;">${m.name}</td>
+                                    <td style="padding: 0.75rem;">${m.category}</td>
+                                    <td style="padding: 0.75rem;">${formatCurrency(m.price)}</td>
+                                    <td style="padding: 0.75rem;">${m.unit}</td>
+                                    <td style="padding: 0.75rem;">
+                                        <button type="button" class="delete-material-btn btn-danger" data-id="${m.id}" style="background: none; border: none; color: var(--danger); cursor: pointer; font-size: 1rem;">&times;</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `,
+            settings: () => `
+                <div class="card">
+                    <div class="card-header"><h2 class="card-title">Settings</h2></div>
+                    <div class="form-group">
+                        <label class="form-label" for="currencySelect">Currency</label>
+                        <select id="currencySelect" class="form-input">
+                            <option value="USD" ${state.settings.currency === 'USD' ? 'selected' : ''}>USD - US Dollar</option>
+                            <option value="EUR" ${state.settings.currency === 'EUR' ? 'selected' : ''}>EUR - Euro</option>
+                            <option value="GBP" ${state.settings.currency === 'GBP' ? 'selected' : ''}>GBP - British Pound</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="taxRateInput">Default Tax Rate (%)</label>
+                        <input type="number" id="taxRateInput" class="form-input" value="${state.settings.defaultTax}">
+                    </div>
+                    <h3 class="card-title" style="margin-top: 2rem; margin-bottom: 1rem; font-size: 1.1rem;">Company Information</h3>
+                    <div class="form-group">
+                        <label class="form-label" for="companyNameInput">Company Name</label>
+                        <input type="text" id="companyNameInput" class="form-input" value="${state.settings.companyName}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="companyAddressInput">Company Address</label>
+                        <input type="text" id="companyAddressInput" class="form-input" value="${state.settings.companyAddress}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="companyPhoneInput">Company Phone</label>
+                        <input type="tel" id="companyPhoneInput" class="form-input" value="${state.settings.companyPhone}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="companyEmailInput">Company Email</label>
+                        <input type="email" id="companyEmailInput" class="form-input" value="${state.settings.companyEmail}">
+                    </div>
+                    <button id="saveSettingsBtn" class="btn btn-primary">Save Settings</button>
+                </div>
+            `
+        };
+
+        // --- RENDER FUNCTIONS ---
+        function render(tabId) {
+            const container = document.getElementById(`${tabId}Tab`);
+            if (container && templates[tabId]) {
+                container.innerHTML = templates[tabId]();
+            }
+            addEventListenersForTab(tabId);
+        }
+        
+        function addEventListenersForTab(tabId) {
+            if (tabId === 'estimates') {
+                document.getElementById('addLineItemBtn').addEventListener('click', addLineItem);
+                document.getElementById('estimateForm').addEventListener('submit', saveProject);
+                document.getElementById('line-items-container').addEventListener('input', updateEstimateTotal);
+                document.getElementById('line-items-container').addEventListener('change', (e) => {
+                    if (e.target.dataset.field === 'material-select') {
+                        const selectedMaterialId = e.target.value;
+                        const lineItemDiv = e.target.closest('.line-item');
+                        const costInput = lineItemDiv.querySelector('[data-field="cost"]');
+                        const descInput = lineItemDiv.querySelector('[data-field="desc"]');
+                        
+                        if (selectedMaterialId) {
+                            const material = state.materials.find(m => m.id == selectedMaterialId);
+                            if (material) {
+                                descInput.value = `${material.name} (${material.unit})`;
+                                costInput.value = material.price.toFixed(2);
+                            }
+                        } else {
+                            descInput.value = '';
+                            costInput.value = '0.00';
+                        }
+                        updateEstimateTotal();
+                    }
+                });
+                document.getElementById('line-items-container').addEventListener('click', (e) => {
+                    if (e.target.classList.contains('delete-btn')) {
+                        e.target.closest('.line-item').remove();
+                        updateEstimateTotal();
+                    }
+                });
+                document.getElementById('exportPdfBtn').addEventListener('click', exportEstimateToPDF);
+                document.getElementById('exportCsvBtn').addEventListener('click', exportEstimateToCSV);
+                document.getElementById('generateProposalTextBtn').addEventListener('click', generateProposalText);
+
+            } else if (tabId === 'materials') {
+                document.getElementById('addMaterialBtn').addEventListener('click', addMaterial);
+                document.getElementById('materialsList').addEventListener('click', (e) => {
+                    if (e.target.classList.contains('delete-material-btn')) {
+                        const materialId = parseInt(e.target.dataset.id);
+                        deleteMaterial(materialId);
+                    }
+                });
+            } else if (tabId === 'settings') {
+                document.getElementById('saveSettingsBtn').addEventListener('click', saveSettings);
+            }
+        }
+
+        // --- FEATURE LOGIC ---
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: state.settings.currency }).format(amount);
+        }
+
+        function addLineItem() {
+            const container = document.getElementById('line-items-container');
+            const div = document.createElement('div');
+            div.className = 'line-item';
+            div.innerHTML = `
+                <select class="form-input" data-field="material-select">
+                    <option value="">-- Select Material --</option>
+                    ${state.materials.map(m => `<option value="${m.id}">${m.name} (${m.unit}) - ${formatCurrency(m.price)}</option>`).join('')}
+                </select>
+                <input type="number" class="form-input" placeholder="Quantity" value="1" data-field="qty" min="0">
+                <input type="number" class="form-input" placeholder="Unit Cost" value="0.00" step="0.01" data-field="cost" min="0">
+                <div class="line-item-total" style="text-align: right;">${formatCurrency(0)}</div>
+                <button type="button" class="delete-btn">&times;</button>
+            `;
+            container.appendChild(div);
+        }
+
+        function updateEstimateTotal() {
+            let total = 0;
+            document.querySelectorAll('#line-items-container .line-item').forEach(item => {
+                const qty = parseFloat(item.querySelector('[data-field="qty"]').value) || 0;
+                const cost = parseFloat(item.querySelector('[data-field="cost"]').value) || 0;
+                const itemTotal = qty * cost;
+                item.querySelector('.line-item-total').textContent = formatCurrency(itemTotal);
+                total += itemTotal;
+            });
+            document.getElementById('estimateTotal').textContent = formatCurrency(total);
+        }
+
+        async function saveProject(e) {
+            e.preventDefault();
+            const name = document.getElementById('projectName').value;
+            const client = document.getElementById('clientName').value;
+            const totalText = document.getElementById('estimateTotal').textContent;
+            const total = parseFloat(totalText.replace(/[^0-9.-]+/g,""));
+
+            if (!name || !client) {
+                await showModal('Input Error', 'Please fill out Project Name and Client Name.');
+                return;
+            }
+            
+            const newProject = {
+                id: Date.now(),
+                name,
+                client,
+                total,
+                status: 'Active'
+            };
+            state.projects.unshift(newProject);
+            await showModal('Success', 'Project Saved!');
+            switchTab('dashboard');
+        }
+
+        async function addMaterial() {
+            const name = await showModal('Add Material', 'Enter material name:', true);
+            if (!name) return;
+            const category = await showModal('Add Material', 'Enter category:', true);
+            if (!category) return;
+            const priceStr = await showModal('Add Material', 'Enter price:', true);
+            const price = parseFloat(priceStr);
+            if (isNaN(price)) {
+                await showModal('Input Error', "Invalid price. Please enter a number.");
+                return;
+            }
+            const unit = await showModal('Add Material', 'Enter unit (e.g., sheet, piece):', true);
+            if (!unit) return;
+
+            if (name && category && !isNaN(price) && unit) {
+                state.materials.push({ id: Date.now(), name, category, price, unit });
+                render('materials');
+                await showModal('Success', 'Material added successfully!');
+            } else {
+                await showModal('Input Error', "Invalid input. Please provide all material details.");
+            }
+        }
+
+        async function deleteMaterial(id) {
+            const confirmed = await showModal('Confirm Deletion', 'Are you sure you want to delete this material?', true);
+            if (confirmed) {
+                state.materials = state.materials.filter(m => m.id !== id);
+                render('materials');
+                await showModal('Success', 'Material deleted.');
+            }
+        }
+        
+        async function saveSettings() {
+            state.settings.currency = document.getElementById('currencySelect').value;
+            state.settings.defaultTax = parseFloat(document.getElementById('taxRateInput').value);
+            state.settings.companyName = document.getElementById('companyNameInput').value;
+            state.settings.companyAddress = document.getElementById('companyAddressInput').value;
+            state.settings.companyPhone = document.getElementById('companyPhoneInput').value;
+            state.settings.companyEmail = document.getElementById('companyEmailInput').value;
+
+            await showModal('Success', 'Settings saved!');
+            // Re-render all tabs to reflect currency changes
+            Object.keys(templates).forEach(tabId => render(tabId));
+        }
+
+        function exportEstimateToCSV() {
+            const projectName = document.getElementById('projectName').value || 'Untitled Project';
+            const clientName = document.getElementById('clientName').value || 'Unknown Client';
+            const total = document.getElementById('estimateTotal').textContent;
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += `Project Name:,${projectName}\n`;
+            csvContent += `Client Name:,${clientName}\n`;
+            csvContent += `Total Estimate:,${total}\n\n`;
+            csvContent += "Description,Quantity,Unit Cost,Line Total\n";
+
+            document.querySelectorAll('#line-items-container .line-item').forEach(item => {
+                const description = item.querySelector('[data-field="material-select"] option:checked')?.textContent.split('(')[0].trim() || 'Custom Item';
+                const qty = item.querySelector('[data-field="qty"]').value;
+                const cost = item.querySelector('[data-field="cost"]').value;
+                const itemTotal = item.querySelector('.line-item-total').textContent;
+                csvContent += `"${description}",${qty},"${cost}","${itemTotal}"\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `${projectName.replace(/[^a-zA-Z0-9]/g, '_')}_estimate.csv`);
+            document.body.appendChild(link); // Required for Firefox
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function exportEstimateToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            const projectName = document.getElementById('projectName').value || 'Untitled Project';
+            const clientName = document.getElementById('clientName').value || 'Unknown Client';
+            const estimateTotal = document.getElementById('estimateTotal').textContent;
+
+            let y = 20;
+
+            // Company Info
+            doc.setFontSize(16);
+            doc.text(state.settings.companyName, 14, y);
+            y += 7;
+            doc.setFontSize(10);
+            doc.text(state.settings.companyAddress, 14, y);
+            y += 5;
+            doc.text(`${state.settings.companyPhone} | ${state.settings.companyEmail}`, 14, y);
+            y += 15;
+
+            // Estimate Title
+            doc.setFontSize(22);
+            doc.text('Construction Estimate Proposal', 105, y, null, null, 'center');
+            y += 15;
+
+            // Project Details
+            doc.setFontSize(12);
+            doc.text(`Project Name: ${projectName}`, 14, y);
+            y += 7;
+            doc.text(`Client Name: ${clientName}`, 14, y);
+            y += 7;
+            doc.text(`Date: ${new Date().toLocaleDateString()}`, 14, y);
+            y += 15;
+
+            // Line Items Table
+            const headers = [['Description', 'Qty', 'Unit Cost', 'Line Total']];
+            const data = [];
+            document.querySelectorAll('#line-items-container .line-item').forEach(item => {
+                const description = item.querySelector('[data-field="material-select"] option:checked')?.textContent.split('(')[0].trim() || 'Custom Item';
+                const qty = item.querySelector('[data-field="qty"]').value;
+                const cost = item.querySelector('[data-field="cost"]').value;
+                const itemTotal = item.querySelector('.line-item-total').textContent;
+                data.push([description, qty, cost, itemTotal]);
+            });
+
+            doc.autoTable({
+                startY: y,
+                head: headers,
+                body: data,
+                theme: 'striped',
+                headStyles: { fillColor: [79, 70, 229] },
+                styles: { fontSize: 10, cellPadding: 3 },
+                columnStyles: {
+                    0: { cellWidth: 80 },
+                    1: { cellWidth: 20, halign: 'right' },
+                    2: { cellWidth: 30, halign: 'right' },
+                    3: { cellWidth: 30, halign: 'right' }
+                }
+            });
+
+            y = doc.autoTable.previous.finalY + 10;
+
+            // Total
+            doc.setFontSize(14);
+            doc.text(`Estimated Total: ${estimateTotal}`, 14, y);
+            y += 10;
+            doc.text(`Tax Rate: ${state.settings.defaultTax}%`, 14, y);
+            y += 10;
+            const totalNumeric = parseFloat(estimateTotal.replace(/[^0-9.-]+/g,""));
+            const taxAmount = totalNumeric * (state.settings.defaultTax / 100);
+            doc.text(`Total with Tax: ${formatCurrency(totalNumeric + taxAmount)}`, 14, y);
+
+
+            doc.save(`${projectName.replace(/[^a-zA-Z0-9]/g, '_')}_proposal.pdf`);
+        }
+
+        async function generateProposalText() {
+            const projectName = document.getElementById('projectName').value;
+            const clientName = document.getElementById('clientName').value;
+
+            if (!projectName || !clientName) {
+                await showModal('Input Required', 'Please enter a Project Name and Client Name before generating proposal text.');
+                return;
+            }
+
+            let lineItemSummary = [];
+            document.querySelectorAll('#line-items-container .line-item').forEach(item => {
+                const description = item.querySelector('[data-field="material-select"] option:checked')?.textContent.split('(')[0].trim() || 'Custom Item';
+                const qty = item.querySelector('[data-field="qty"]').value;
+                const unitCost = item.querySelector('[data-field="cost"]').value;
+                lineItemSummary.push(`${qty} units of ${description} at ${formatCurrency(unitCost)} per unit`);
+            });
+
+            let prompt = `Generate a concise and professional project overview for a construction proposal.
+            Project Name: "${projectName}"
+            Client Name: "${clientName}"
+            Key scope of work includes: ${lineItemSummary.join(', ')}.
+            
+            The overview should be approximately 3-5 sentences, highlight the value proposition for the client, and maintain a positive, forward-looking tone.`;
+
+            try {
+                showModal('Generating Proposal Text...', 'Please wait, this may take a moment.', false, true);
+
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                const payload = { contents: chatHistory };
+                const apiKey = ""; // Canvas will provide this at runtime
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const generatedText = result.candidates[0].content.parts[0].text;
+                    showModal('Generated Proposal Text', generatedText);
+                } else {
+                    showModal('Generation Failed', 'Could not generate proposal text. Please try again.');
+                    console.error('Gemini API response structure unexpected:', result);
+                }
+            } catch (error) {
+                showModal('Error', 'Failed to connect to the AI service. Please check your network connection or try again later.');
+                console.error('Error calling Gemini API:', error);
+            }
+        }
+
+
+        // --- NAVIGATION & INITIALIZATION ---
+        const navItems = document.querySelectorAll('.nav-item');
+        const pageTitle = document.getElementById('pageTitle');
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.toggle('active', tab.id === `${tabId}Tab`));
+            navItems.forEach(item => item.classList.toggle('active', item.dataset.tab === tabId));
+            const newTitle = document.querySelector(`.nav-item[data-tab="${tabId}"]`).textContent.trim();
+            pageTitle.textContent = newTitle;
+            render(tabId);
+        }
+
+        navItems.forEach(item => item.addEventListener('click', () => switchTab(item.dataset.tab)));
+        document.getElementById('newProjectBtn').addEventListener('click', () => switchTab('estimates'));
+
+        // --- PLAN TAKEOFF ---
+        const planViewer = document.getElementById('planViewer');
+        const canvas = document.getElementById('planCanvas');
+        const ctx = canvas.getContext('2d');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const instructions = document.getElementById('planInstructions');
+        const measurementsList = document.getElementById('measurements');
+        const toolBtns = document.querySelectorAll('.tool-btn[data-tool]');
+        const scaleInput = document.getElementById('scaleInput');
+
+        let image = null;
+        let takeoffMeasurements = [];
+        let currentTool = null;
+        let isDrawing = false;
+        let points = [];
+        let zoom = 1;
+        let panOffset = { x: 0, y: 0 };
+        let startPan = { x: 0, y: 0 };
+
+        // Ensure canvas dimensions are set to fill the viewer
+        const resizeCanvas = () => {
+            if (planViewer && canvas && image) {
+                canvas.width = planViewer.clientWidth;
+                canvas.height = planViewer.clientHeight;
+                resetCanvasState(); // Recalculate zoom and pan to fit
+                redrawAll();
+            }
+        };
+
+        // Add event listener for window resize
+        window.addEventListener('resize', resizeCanvas);
+
+
+        uploadBtn.addEventListener('change', handleFileUpload);
+        toolBtns.forEach(btn => btn.addEventListener('click', () => selectTool(btn.dataset.tool)));
+        planViewer.addEventListener('mousedown', handleMouseDown);
+        planViewer.addEventListener('mousemove', handleMouseMove);
+        planViewer.addEventListener('mouseup', handleMouseUp);
+        planViewer.addEventListener('wheel', handleWheel);
+        measurementsList.addEventListener('click', (e) => {
+            if (e.target.classList.contains('delete-btn')) {
+                const id = parseInt(e.target.parentElement.dataset.id);
+                takeoffMeasurements = takeoffMeasurements.filter(m => m.id !== id);
+                renderTakeoffMeasurements();
+                redrawAll();
+            }
+        });
+        scaleInput.addEventListener('change', renderTakeoffMeasurements);
+
+        function selectTool(tool) {
+            if (currentTool === tool) {
+                currentTool = null;
+                document.querySelector('.tool-btn.active')?.classList.remove('active');
+                planViewer.style.cursor = 'grab';
+            } else {
+                currentTool = tool;
+                toolBtns.forEach(b => b.classList.toggle('active', b.dataset.tool === tool));
+                planViewer.style.cursor = 'crosshair';
+            }
+            isDrawing = false;
+            points = [];
+            redrawAll();
+        }
+
+        function handleFileUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                image = new Image();
+                image.onload = () => {
+                    instructions.style.display = 'none';
+                    resizeCanvas(); // Use resizeCanvas to set initial state and redraw
+                };
+                image.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        function resetCanvasState() {
+            zoom = 1;
+            panOffset = { x: 0, y: 0 };
+            if (!image) return; // Only reset if an image is loaded
+
+            // Calculate initial zoom to fit image within viewer
+            const hRatio = planViewer.clientWidth / image.width;
+            const vRatio = planViewer.clientHeight / image.height;
+            zoom = Math.min(hRatio, vRatio, 1); // Don't zoom in if image is smaller than viewer
+            
+            // Center the image
+            panOffset.x = (planViewer.clientWidth - image.width * zoom) / 2;
+            panOffset.y = (planViewer.clientHeight - image.height * zoom) / 2;
+        }
+
+        function handleMouseDown(e) {
+            // Only interact if an image is loaded
+            if (!image) return;
+
+            const mousePos = getMousePos(e);
+            if (currentTool) {
+                isDrawing = true;
+                points.push(screenToWorld(mousePos));
+            } else {
+                isDrawing = true; // For panning
+                startPan = { x: mousePos.x - panOffset.x, y: mousePos.y - panOffset.y };
+                planViewer.style.cursor = 'grabbing';
+            }
+        }
+
+        function handleMouseMove(e) {
+            if (!isDrawing || !image) return; // Only move if drawing/panning and image is loaded
+            const mousePos = getMousePos(e);
+            if (currentTool) {
+                // If a tool is active, redraw temporary measurement
+                redrawAll(); // Clear and redraw image + existing measurements
+                const worldPos = screenToWorld(mousePos);
+                ctx.save();
+                ctx.setTransform(zoom, 0, 0, zoom, panOffset.x, panOffset.y);
+                ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)';
+                ctx.lineWidth = 2 / zoom;
+                ctx.beginPath();
+                if (currentTool === 'line') {
+                    ctx.moveTo(points[0].x, points[0].y);
+                    ctx.lineTo(worldPos.x, worldPos.y);
+                } else if (currentTool === 'area') {
+                    ctx.rect(points[0].x, points[0].y, worldPos.x - points[0].x, worldPos.y - points[0].y);
+                }
+                ctx.stroke();
+                ctx.restore();
+            } else {
+                // If no tool is active, pan the image
+                panOffset.x = mousePos.x - startPan.x;
+                panOffset.y = mousePos.y - startPan.y;
+                redrawAll(); // Redraw with new pan offset
+            }
+        }
+
+        function handleMouseUp(e) {
+            if (!isDrawing || !image) return; // Only interact if image is loaded
+            isDrawing = false;
+            planViewer.style.cursor = currentTool ? 'crosshair' : 'grab'; // Reset cursor
+
+            if (currentTool) {
+                const mousePos = getMousePos(e);
+                // For count tool, we only need one point, so check if points array is already populated
+                if (currentTool === 'count' && points.length === 1) {
+                    // Do nothing, point is already added in mousedown
+                } else {
+                    points.push(screenToWorld(mousePos));
+                }
+                processMeasurement();
+                points = []; // Reset points for next measurement
+            }
+            redrawAll(); // Final redraw
+        }
+        
+        function handleWheel(e) {
+            if (!image) return; // Only zoom if an image is loaded
+
+            e.preventDefault();
+            const mousePos = getMousePos(e);
+            const zoomFactor = 1.1;
+            const oldZoom = zoom;
+            zoom = e.deltaY < 0 ? zoom * zoomFactor : zoom / zoomFactor;
+            zoom = Math.max(0.1, Math.min(zoom, 10)); // Clamp zoom level
+            panOffset.x = mousePos.x - (mousePos.x - panOffset.x) * (zoom / oldZoom);
+            panOffset.y = mousePos.y - (mousePos.y - panOffset.y) * (zoom / oldZoom);
+            redrawAll();
+        }
+        
+        function processMeasurement() {
+            let measurement;
+            if (currentTool === 'line' && points.length === 2) {
+                measurement = { id: Date.now(), type: 'line', points: [...points] };
+            } else if (currentTool === 'area' && points.length === 2) {
+                measurement = { id: Date.now(), type: 'area', points: [...points] };
+            } else if (currentTool === 'count' && points.length === 1) { // Only one point for count
+                measurement = { id: Date.now(), type: 'count', points: [points[0]] };
+            }
+            
+            if (measurement) {
+                takeoffMeasurements.push(measurement);
+                renderTakeoffMeasurements();
+            }
+        }
+
+        function redrawAll() {
+            canvas.width = planViewer.clientWidth;
+            canvas.height = planViewer.clientHeight;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (image) {
+                ctx.save();
+                ctx.translate(panOffset.x, panOffset.y);
+                ctx.scale(zoom, zoom);
+                ctx.drawImage(image, 0, 0);
+                ctx.restore();
+                
+                // Draw existing measurements
+                ctx.save();
+                ctx.setTransform(zoom, 0, 0, zoom, panOffset.x, panOffset.y);
+                takeoffMeasurements.forEach(drawMeasurement);
+                ctx.restore();
+            }
+        }
+        
+        function drawMeasurement(m) {
+            ctx.lineWidth = 2 / zoom; // Make line width consistent regardless of zoom
+            if (m.type === 'line') {
+                ctx.strokeStyle = 'blue';
+                ctx.beginPath();
+                ctx.moveTo(m.points[0].x, m.points[0].y);
+                ctx.lineTo(m.points[1].x, m.points[1].y);
+                ctx.stroke();
+            } else if (m.type === 'area') {
+                ctx.fillStyle = 'rgba(0, 0, 255, 0.2)';
+                ctx.strokeStyle = 'blue';
+                const p1 = m.points[0], p2 = m.points[1];
+                ctx.beginPath();
+                ctx.rect(p1.x, p1.y, p2.x - p1.x, p2.y - p1.y);
+                ctx.fill();
+                ctx.stroke();
+            } else if (m.type === 'count') {
+                ctx.strokeStyle = 'green';
+                ctx.beginPath();
+                ctx.arc(m.points[0].x, m.points[0].y, 10 / zoom, 0, 2 * Math.PI); // Radius scales with zoom
+                ctx.stroke();
+                // Add count number
+                ctx.fillStyle = 'green';
+                ctx.font = `${14 / zoom}px Arial`; // Font size scales with zoom
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('1', m.points[0].x, m.points[0].y);
+            }
+        }
+        
+        function renderTakeoffMeasurements() {
+            measurementsList.innerHTML = '';
+            const scaleValue = parseFloat(scaleInput.value) || 1;
+            const pixelsPerInch = 96; // Standard DPI for browsers
+            takeoffMeasurements.forEach(m => {
+                let value = '';
+                if (m.type === 'line') {
+                    const dx = m.points[1].x - m.points[0].x, dy = m.points[1].y - m.points[0].y;
+                    const feet = (Math.sqrt(dx*dx + dy*dy) / pixelsPerInch) * scaleValue;
+                    value = `${feet.toFixed(2)} ft`;
+                } else if (m.type === 'area') {
+                    const dx = Math.abs(m.points[1].x - m.points[0].x), dy = Math.abs(m.points[1].y - m.points[0].y);
+                    const sqFeet = (dx * dy / Math.pow(pixelsPerInch, 2)) * Math.pow(scaleValue, 2);
+                    value = `${sqFeet.toFixed(2)} sq ft`;
+                } else if (m.type === 'count') {
+                    value = `1 item`; // Each count measurement represents one item
+                }
+                
+                const li = document.createElement('li');
+                li.dataset.id = m.id;
+                li.innerHTML = `<span>${m.type.charAt(0).toUpperCase() + m.type.slice(1)}</span><strong class="measurement-value">${value}</strong><button class="delete-btn">&times;</button>`;
+                measurementsList.appendChild(li);
+            });
+        }
+        
+        function getMousePos(e) {
+            const rect = planViewer.getBoundingClientRect();
+            return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+        }
+        
+        function screenToWorld(pos) {
+            return { x: (pos.x - panOffset.x) / zoom, y: (pos.y - panOffset.y) / zoom };
+        }
+
+        // Initial call
+        switchTab('dashboard');
+
+    })();
+    </script>
+</body>
+</html>
