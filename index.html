@@ -27,12 +27,15 @@
             --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
             --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
             --border-radius: 0.75rem;
-        }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+            /* Dark Mode Variables */
+            --dark-background: #1a202c;
+            --dark-card-background: #2d3748;
+            --dark-text-color: #e2e8f0;
+            --dark-gray-700: #a0aec0;
+            --dark-gray-500: #cbd5e0;
+            --dark-gray-300: #4a5568;
+            --dark-gray-100: #2d3748;
         }
 
         body {
@@ -41,6 +44,135 @@
             color: var(--gray-900);
             line-height: 1.5;
             overflow: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Dark Mode Styles */
+        body.dark-mode {
+            background: var(--dark-background);
+            color: var(--dark-text-color);
+        }
+
+        body.dark-mode .sidebar {
+            background: var(--dark-card-background);
+            border-right-color: var(--dark-gray-300);
+        }
+
+        body.dark-mode .logo {
+            color: var(--dark-text-color);
+        }
+
+        body.dark-mode .nav-item {
+            color: var(--dark-gray-700);
+        }
+
+        body.dark-mode .nav-item:hover {
+            background: var(--dark-gray-100);
+            color: var(--dark-text-color);
+        }
+
+        body.dark-mode .nav-item.active {
+            background: var(--primary); /* Use primary for active in dark mode */
+            color: var(--white);
+        }
+
+        body.dark-mode .card {
+            background: var(--dark-card-background);
+            box-shadow: var(--shadow-md);
+            border-color: var(--dark-gray-300);
+        }
+
+        body.dark-mode .card-header {
+            border-bottom-color: var(--dark-gray-300);
+        }
+
+        body.dark-mode .card-title {
+            color: var(--dark-text-color);
+        }
+
+        body.dark-mode .stat-card {
+            background: var(--dark-card-background);
+            border-color: var(--dark-gray-300);
+        }
+
+        body.dark-mode .stat-card .label {
+            color: var(--dark-gray-500);
+        }
+
+        body.dark-mode .form-label {
+            color: var(--dark-gray-500);
+        }
+
+        body.dark-mode .form-input,
+        body.dark-mode .form-input option,
+        body.dark-mode .form-input select {
+            background: var(--dark-gray-100);
+            border-color: var(--dark-gray-300);
+            color: var(--dark-text-color);
+        }
+
+        body.dark-mode #line-items-container .line-item,
+        body.dark-mode #materialsList tr {
+            border-bottom-color: var(--dark-gray-300);
+        }
+
+        body.dark-mode #line-items-container .line-item-header {
+            color: var(--dark-gray-500);
+        }
+
+        body.dark-mode #planViewer {
+            background: var(--dark-card-background);
+            border-color: var(--dark-gray-300);
+        }
+
+        body.dark-mode #planInstructions {
+            color: var(--dark-gray-500);
+        }
+
+        body.dark-mode .tool-btn {
+            background: var(--dark-gray-100);
+            border-color: var(--dark-gray-300);
+        }
+
+        body.dark-mode .tool-btn:hover {
+            background: var(--dark-gray-300);
+        }
+
+        body.dark-mode .tool-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+        body.dark-mode .tool-btn svg {
+            stroke: var(--dark-gray-500);
+        }
+        body.dark-mode .tool-btn.active svg {
+            stroke: var(--white);
+        }
+
+        body.dark-mode #measurements li {
+            border-bottom-color: var(--dark-gray-300);
+        }
+        body.dark-mode #measurements li:hover {
+            background-color: var(--dark-gray-100);
+        }
+
+        body.dark-mode .modal-content {
+            background: var(--dark-card-background);
+            box-shadow: var(--shadow-md);
+        }
+        body.dark-mode .modal-content h3 {
+            color: var(--dark-text-color);
+        }
+        body.dark-mode .modal-content p {
+            color: var(--dark-gray-500);
+        }
+
+
+        /* General styles (from previous code) */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         .container {
@@ -576,7 +708,8 @@
                 companyName: "Your Construction Co.",
                 companyAddress: "123 Building Blvd, City, State, ZIP",
                 companyPhone: "555-123-4567",
-                companyEmail: "info@yourco.com"
+                companyEmail: "info@yourco.com",
+                darkMode: false // New setting for dark mode
             },
             currentEstimate: {
                 lineItems: []
@@ -585,7 +718,6 @@
         };
 
         // Define materials as a direct JavaScript array of objects
-        // JSON.stringify will handle the escaping correctly when converting to a string
         const rawMaterials = [
             { id: 101, name: "Standard Drywall (1/2\")", category: "Finishes", price: 15.50, unit: "sheet" },
             { id: 102, name: "Moisture-Resistant Drywall (5/8\")", category: "Finishes", price: 22.00, unit: "sheet" },
@@ -594,26 +726,22 @@
             { id: 301, name: "TPO Roofing Membrane", category: "Exterior", price: 9.50, unit: "sq ft" },
             { id: 302, name: "Asphalt Shingles (3-tab)", category: "Exterior", price: 75.00, unit: "bundle" },
             { id: 401, name: "Concrete (3000 PSI)", category: "Concrete", price: 120.00, unit: "cubic yard" },
-            { id: 501, name: "Electrical Wire (14/2 Romex)", category: "Electrical", price: 0.50, unit: "linear ft" },
+            { id: 501, name: "Electrical Wire (14/2 Romex)", category: "Electrical", "price": 0.50, unit: "linear ft" },
             { id: 601, name: "PEX Tubing (1/2\")", category: "Plumbing", price: 0.70, unit: "linear ft" }
         ];
 
-        // Convert the JavaScript array to a JSON string for simulation
-        const materialsJsonContent = JSON.stringify(rawMaterials, null, 4); // null, 4 for pretty printing
-
-        // Function to load materials from the simulated JSON
+        // Function to load materials from the simulated JSON (now direct assignment)
         async function loadMaterials() {
             try {
-                // Simulate fetching the JSON file
-                const response = await new Promise(resolve => setTimeout(() => resolve({
-                    ok: true,
-                    json: () => Promise.resolve(JSON.parse(materialsJsonContent))
-                }), 100)); // Simulate a small delay
+                // In a real application, you would fetch from a file:
+                // const response = await fetch('materials.json');
+                // if (!response.ok) {
+                //     throw new Error(`HTTP error! status: ${response.status}`);
+                // }
+                // state.materials = await response.json();
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                state.materials = await response.json();
+                // For this simulation, directly assign the rawMaterials array
+                state.materials = rawMaterials;
                 console.log('Materials loaded:', state.materials);
             } catch (error) {
                 console.error('Failed to load materials:', error);
@@ -775,6 +903,10 @@
                         <label class="form-label" for="companyEmailInput">Company Email</label>
                         <input type="email" id="companyEmailInput" class="form-input" value="${state.settings.companyEmail}">
                     </div>
+                    <div class="form-group">
+                        <label class="form-label" for="darkModeToggle">Dark Mode</label>
+                        <input type="checkbox" id="darkModeToggle" class="form-input" ${state.settings.darkMode ? 'checked' : ''}>
+                    </div>
                     <button id="saveSettingsBtn" class="btn btn-primary">Save Settings</button>
                 </div>
             `
@@ -847,6 +979,7 @@
                 });
             } else if (tabId === 'settings') {
                 document.getElementById('saveSettingsBtn').addEventListener('click', saveSettings);
+                document.getElementById('darkModeToggle').addEventListener('change', toggleDarkMode);
             }
         }
 
@@ -1003,10 +1136,29 @@
             state.settings.companyAddress = document.getElementById('companyAddressInput').value;
             state.settings.companyPhone = document.getElementById('companyPhoneInput').value;
             state.settings.companyEmail = document.getElementById('companyEmailInput').value;
+            state.settings.darkMode = document.getElementById('darkModeToggle').checked; // Save dark mode state
+
+            // Apply dark mode immediately after saving settings
+            applyDarkMode(state.settings.darkMode);
 
             await showModal('Success', 'Settings saved!');
-            // Re-render all tabs to reflect currency changes
+            // Re-render all tabs to reflect currency changes (and potentially dark mode changes)
             Object.keys(templates).forEach(tabId => render(tabId));
+        }
+
+        function toggleDarkMode() {
+            state.settings.darkMode = !state.settings.darkMode;
+            applyDarkMode(state.settings.darkMode);
+            // Save preference to local storage
+            localStorage.setItem('darkMode', state.settings.darkMode);
+        }
+
+        function applyDarkMode(isDarkMode) {
+            if (isDarkMode) {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
         }
 
         function exportEstimateToCSV() {
@@ -1459,6 +1611,13 @@
         function screenToWorld(pos) {
             return { x: (pos.x - panOffset.x) / zoom, y: (pos.y - panOffset.y) / zoom };
         }
+
+        // Initial setup for dark mode from local storage
+        const savedDarkMode = localStorage.getItem('darkMode');
+        if (savedDarkMode !== null) {
+            state.settings.darkMode = JSON.parse(savedDarkMode);
+        }
+        applyDarkMode(state.settings.darkMode); // Apply theme on initial load
 
         // Initial call - Load materials first, then switch to dashboard
         loadMaterials().then(() => {
