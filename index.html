@@ -584,20 +584,22 @@
             currentProjectId: null // New property to store the ID of the project being edited
         };
 
-        // Simulated materials.json content
-        const materialsJsonContent = `
-            [
-                { "id": 101, "name": "Standard Drywall (1/2\\\\")", "category": "Finishes", "price": 15.50, "unit": "sheet" },
-                { "id": 102, "name": "Moisture-Resistant Drywall (5/8\\\\")", "category": "Finishes", "price": 22.00, "unit": "sheet" },
-                { "id": 201, "name": "2x4 Lumber (8ft SPF)", "category": "Framing", "price": 3.75, "unit": "piece" },
-                { "id": 202, "name": "2x6 Lumber (12ft SPF)", "category": "Framing", "price": 7.20, "unit": "piece" },
-                { "id": 301, "name": "TPO Roofing Membrane", "category": "Exterior", "price": 9.50, "unit": "sq ft" },
-                { "id": 302, "name": "Asphalt Shingles (3-tab)", "category": "Exterior", "price": 75.00, "unit": "bundle" },
-                { "id": 401, "name": "Concrete (3000 PSI)", "category": "Concrete", "price": 120.00, "unit": "cubic yard" },
-                { "id": 501, "name": "Electrical Wire (14/2 Romex)", "category": "Electrical", "price": 0.50, "unit": "linear ft" },
-                { "id": 601, "name": "PEX Tubing (1/2\\\\")", "category": "Plumbing", "price": 0.70, "unit": "linear ft" }
-            ]
-        `;
+        // Define materials as a direct JavaScript array of objects
+        // JSON.stringify will handle the escaping correctly when converting to a string
+        const rawMaterials = [
+            { id: 101, name: "Standard Drywall (1/2\")", category: "Finishes", price: 15.50, unit: "sheet" },
+            { id: 102, name: "Moisture-Resistant Drywall (5/8\")", category: "Finishes", price: 22.00, unit: "sheet" },
+            { id: 201, name: "2x4 Lumber (8ft SPF)", category: "Framing", price: 3.75, unit: "piece" },
+            { id: 202, name: "2x6 Lumber (12ft SPF)", category: "Framing", price: 7.20, unit: "piece" },
+            { id: 301, name: "TPO Roofing Membrane", category: "Exterior", price: 9.50, unit: "sq ft" },
+            { id: 302, name: "Asphalt Shingles (3-tab)", category: "Exterior", price: 75.00, unit: "bundle" },
+            { id: 401, name: "Concrete (3000 PSI)", category: "Concrete", price: 120.00, unit: "cubic yard" },
+            { id: 501, name: "Electrical Wire (14/2 Romex)", category: "Electrical", price: 0.50, unit: "linear ft" },
+            { id: 601, name: "PEX Tubing (1/2\")", category: "Plumbing", price: 0.70, unit: "linear ft" }
+        ];
+
+        // Convert the JavaScript array to a JSON string for simulation
+        const materialsJsonContent = JSON.stringify(rawMaterials, null, 4); // null, 4 for pretty printing
 
         // Function to load materials from the simulated JSON
         async function loadMaterials() {
@@ -690,7 +692,7 @@
                     
                     <h3 class="card-title" style="margin-top: 2rem; margin-bottom: 1rem; font-size: 1.1rem;">Line Items</h3>
                     <div id="line-items-container">
-                        <div class="line-item line-item-header">
+                        <div class="line-item-header"> <!-- Removed 'line-item' class -->
                             <div>Description</div>
                             <div>Qty</div>
                             <div>Unit Cost</div>
@@ -862,6 +864,7 @@
                     <option value="">-- Select Material --</option>
                     ${state.materials.map(m => `<option value="${m.id}">${m.name} (${m.unit}) - ${formatCurrency(m.price)}</option>`).join('')}
                 </select>
+                <input type="text" class="form-input" placeholder="Description" data-field="desc">
                 <input type="number" class="form-input" placeholder="Quantity" value="1" data-field="qty" min="0">
                 <input type="number" class="form-input" placeholder="Unit Cost" value="0.00" step="0.01" data-field="cost" min="0">
                 <div class="line-item-total" style="text-align: right;">${formatCurrency(0)}</div>
@@ -872,12 +875,22 @@
 
         function updateEstimateTotal() {
             let total = 0;
+            // Select only actual line items, excluding the header
             document.querySelectorAll('#line-items-container .line-item').forEach(item => {
-                const qty = parseFloat(item.querySelector('[data-field="qty"]').value) || 0;
-                const cost = parseFloat(item.querySelector('[data-field="cost"]').value) || 0;
-                const itemTotal = qty * cost;
-                item.querySelector('.line-item-total').textContent = formatCurrency(itemTotal);
-                total += itemTotal;
+                const qtyInput = item.querySelector('[data-field="qty"]');
+                const costInput = item.querySelector('[data-field="cost"]');
+                const itemTotalDisplay = item.querySelector('.line-item-total');
+
+                // Check if elements exist before accessing their properties
+                if (qtyInput && costInput && itemTotalDisplay) {
+                    const qty = parseFloat(qtyInput.value) || 0;
+                    const cost = parseFloat(costInput.value) || 0;
+                    const itemTotal = qty * cost;
+                    itemTotalDisplay.textContent = formatCurrency(itemTotal);
+                    total += itemTotal;
+                } else {
+                    console.warn('Missing input field or total display in a line item:', item);
+                }
             });
             document.getElementById('estimateTotal').textContent = formatCurrency(total);
         }
@@ -942,12 +955,13 @@
             // Clear existing line items for a fresh estimate for this project
             const lineItemsContainer = document.getElementById('line-items-container');
             // Keep the header row
+            // Start from index 1 to preserve the header (index 0)
             while (lineItemsContainer.children.length > 1) { 
                 lineItemsContainer.removeChild(lineItemsContainer.lastChild);
             }
             state.currentEstimate.lineItems = []; // Clear internal line item state
 
-            updateEstimateTotal(); // Recalculate total for empty line items
+            updateEstimateTotal(); // Recalculate total for empty line items (which should be 0)
         }
 
         async function addMaterial() {
